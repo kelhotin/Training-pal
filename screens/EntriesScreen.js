@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { getEntries } from '../storage';
 
 /**
@@ -9,6 +9,7 @@ import { getEntries } from '../storage';
  */
 export default function EntriesScreen() {
   const [entries, setEntries] = useState([]);
+  const [selectedEntry, setSelectedEntry] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -20,7 +21,7 @@ export default function EntriesScreen() {
 
   const renderItem = ({ item }) => {
     return (
-      <TouchableOpacity style={styles.card}>
+      <TouchableOpacity style={styles.card} onPress={() => setSelectedEntry(item)}>
         <Text style={styles.date}>{new Date(item.timestamp).toLocaleString()}</Text>
         <Text style={styles.sport}>{item.sport}</Text>
         <Text style={styles.summary}>{summarizeEntry(item)}</Text>
@@ -52,6 +53,61 @@ export default function EntriesScreen() {
     }
   }
 
+  // Render full details for an entry based on sport type
+  function renderEntryDetails(entry) {
+    const { sport, data } = entry;
+    switch (sport) {
+      case 'Running':
+        return (
+          <View>
+            <DetailRow label="Distance" value={`${data.distance} km`} />
+            <DetailRow label="Duration" value={data.duration} />
+            <DetailRow label="Pace" value={data.pace} />
+            {data.notes && <DetailRow label="Notes" value={data.notes} />}
+          </View>
+        );
+      case 'Cycling':
+        return (
+          <View>
+            <DetailRow label="Distance" value={`${data.distance} km`} />
+            <DetailRow label="Duration" value={data.duration} />
+            <DetailRow label="Type" value={data.indoor ? 'Indoor' : 'Outdoor'} />
+            {data.notes && <DetailRow label="Notes" value={data.notes} />}
+          </View>
+        );
+      case 'Gym':
+        return (
+          <View>
+            <Text style={styles.detailLabel}>Exercises:</Text>
+            {data.exercises && data.exercises.map((ex, idx) => (
+              <View key={idx} style={styles.exerciseItem}>
+                <Text style={styles.exerciseName}>{ex.name}</Text>
+                <Text style={styles.exerciseDetails}>{ex.sets} sets × {ex.reps} reps</Text>
+              </View>
+            ))}
+            {data.notes && <DetailRow label="Notes" value={data.notes} />}
+          </View>
+        );
+      case 'Ballroom':
+        return (
+          <View>
+            <Text style={styles.detailLabel}>Dances:</Text>
+            {data.dances && data.dances.map((dance, idx) => (
+              <View key={idx} style={styles.danceItem}>
+                <Text style={styles.danceName}>{dance}</Text>
+                {data.perDanceFeedback && data.perDanceFeedback[idx] && (
+                  <Text style={styles.feedbackText}>{data.perDanceFeedback[idx].feedback}</Text>
+                )}
+              </View>
+            ))}
+            {data.notes && <DetailRow label="Overall Notes" value={data.notes} />}
+          </View>
+        );
+      default:
+        return <Text>No details available</Text>;
+    }
+  }
+
   return (
     <View style={styles.container}>
       {entries.length === 0 ? (
@@ -65,6 +121,35 @@ export default function EntriesScreen() {
           renderItem={renderItem}
         />
       )}
+      
+      <Modal visible={selectedEntry !== null} animationType="slide">
+        <View style={styles.modalContainer}>
+          <ScrollView contentContainerStyle={styles.modalContent}>
+            <TouchableOpacity style={styles.closeButton} onPress={() => setSelectedEntry(null)}>
+              <Text style={styles.closeButtonText}>✕ Close</Text>
+            </TouchableOpacity>
+            
+            {selectedEntry && (
+              <View>
+                <Text style={styles.modalDate}>{new Date(selectedEntry.timestamp).toLocaleString()}</Text>
+                <Text style={styles.modalSport}>{selectedEntry.sport}</Text>
+                <View style={styles.modalDivider} />
+                {renderEntryDetails(selectedEntry)}
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      </Modal>
+    </View>
+  );
+}
+
+// Helper component for displaying detail rows
+function DetailRow({ label, value }) {
+  return (
+    <View style={styles.detailRow}>
+      <Text style={styles.detailLabel}>{label}:</Text>
+      <Text style={styles.detailValue}>{value}</Text>
     </View>
   );
 }
@@ -110,5 +195,94 @@ const styles = StyleSheet.create({
   summary: {
     fontSize: 11,
     color: '#333',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingTop: 16,
+  },
+  modalContent: {
+    padding: 16,
+  },
+  closeButton: {
+    alignSelf: 'flex-start',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 6,
+    marginBottom: 16,
+  },
+  closeButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2e86de',
+  },
+  modalDate: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 4,
+  },
+  modalSport: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: '#333',
+  },
+  modalDivider: {
+    height: 1,
+    backgroundColor: '#ddd',
+    marginVertical: 12,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    paddingVertical: 6,
+  },
+  detailLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#333',
+  },
+  detailValue: {
+    fontSize: 13,
+    color: '#666',
+    flex: 1,
+    textAlign: 'right',
+  },
+  exerciseItem: {
+    backgroundColor: '#f9f9f9',
+    padding: 10,
+    borderRadius: 6,
+    marginBottom: 8,
+    marginLeft: 12,
+  },
+  exerciseName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  exerciseDetails: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+  },
+  danceItem: {
+    backgroundColor: '#f9f9f9',
+    padding: 10,
+    borderRadius: 6,
+    marginBottom: 8,
+    marginLeft: 12,
+  },
+  danceName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  feedbackText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+    fontStyle: 'italic',
   },
 });
