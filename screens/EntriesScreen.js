@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { getEntries } from '../storage';
 
 /**
@@ -20,11 +20,11 @@ export default function EntriesScreen() {
 
   const renderItem = ({ item }) => {
     return (
-      <View style={styles.itemContainer}>
+      <TouchableOpacity style={styles.card}>
         <Text style={styles.date}>{new Date(item.timestamp).toLocaleString()}</Text>
         <Text style={styles.sport}>{item.sport}</Text>
         <Text style={styles.summary}>{summarizeEntry(item)}</Text>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -55,7 +55,9 @@ export default function EntriesScreen() {
   return (
     <View style={styles.container}>
       {entries.length === 0 ? (
-        <Text style={styles.empty}>No entries yet. Use the Home screen to add your first entry.</Text>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.empty}>No entries yet. Use the Home screen to add your first entry.</Text>
+        </View>
       ) : (
         <FlatList
           data={entries}
@@ -72,26 +74,41 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
   empty: {
-    marginTop: 32,
     fontSize: 16,
     textAlign: 'center',
-  },
-  itemContainer: {
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ccc',
-  },
-  date: {
-    fontSize: 12,
     color: '#666',
   },
+  card: {
+    width: '100%',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    backgroundColor: '#f0f0f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  date: {
+    fontSize: 10,
+    color: '#666',
+    marginBottom: 1,
+  },
   sport: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '600',
+    marginBottom: 1,
   },
   summary: {
-    fontSize: 14,
+    fontSize: 11,
     color: '#333',
   },
 });

@@ -48,6 +48,7 @@ export default function BallroomForm({ onSave }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.card}>
       <View style={styles.fieldGroup}>
         <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
         <TextInput
@@ -58,22 +59,22 @@ export default function BallroomForm({ onSave }) {
         />
       </View>
       <Text style={[styles.label, { marginBottom: 8 }]}>Select dances</Text>
-      {dances.map((name) => (
-        <View key={name} style={styles.danceRow}>
-          <Text style={styles.danceName}>{name}</Text>
+      <View style={styles.danceGrid}>
+        {dances.map((name) => (
           <TouchableOpacity
+            key={name}
             accessibilityRole="button"
             accessibilityState={{ selected: !!selected[name] }}
             activeOpacity={0.7}
-            style={[styles.toggleButton, selected[name] && styles.toggleButtonSelected]}
+            style={[styles.danceButton, selected[name] && styles.danceButtonSelected]}
             onPress={() => toggleDance(name)}
           >
-            <Text style={[styles.toggleButtonText, selected[name] && styles.toggleButtonTextSelected]}>
-              {selected[name] ? 'Selected' : 'Select'}
+            <Text style={[styles.danceButtonText, selected[name] && styles.danceButtonTextSelected]}>
+              {name}
             </Text>
           </TouchableOpacity>
-        </View>
-      ))}
+        ))}
+      </View>
       {Object.keys(selected).filter((n) => selected[n]).map((name) => (
         <View key={name} style={styles.fieldGroup}>
           <Text style={styles.label}>Feedback for {name}</Text>
@@ -99,6 +100,7 @@ export default function BallroomForm({ onSave }) {
       <TouchableOpacity style={styles.button} onPress={handleSave}>
         <Text style={styles.buttonText}>Save Session</Text>
       </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -107,19 +109,20 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
   },
+  card: {
+    width: '100%',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    backgroundColor: '#f0f0f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
   fieldGroup: {
     marginBottom: 16,
-  },
-  danceRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ddd',
-  },
-  danceName: {
-    fontSize: 16,
   },
   label: {
     fontSize: 14,
@@ -149,26 +152,36 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  toggleButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 14,
+  danceGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    marginBottom: 16,
+    gap: 8,
+  },
+  danceButton: {
+    width: 80,
+    height: 70,
     borderRadius: 8,
     backgroundColor: '#f0f0f0',
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
     elevation: 2,
   },
-  toggleButtonSelected: {
+  danceButtonSelected: {
     backgroundColor: '#2e86de',
   },
-  toggleButtonText: {
+  danceButtonText: {
     color: '#2e86de',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
+    textAlign: 'center',
   },
-  toggleButtonTextSelected: {
+  danceButtonTextSelected: {
     color: '#fff',
   },
 });
