@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 
 /**
  * Form for logging ballroom dance practice.  Users can select
@@ -61,20 +61,17 @@ export default function BallroomForm({ onSave }) {
       {dances.map((name) => (
         <View key={name} style={styles.danceRow}>
           <Text style={styles.danceName}>{name}</Text>
-          <Pressable
+          <TouchableOpacity
             accessibilityRole="button"
             accessibilityState={{ selected: !!selected[name] }}
-            style={({ pressed }) => [
-              styles.toggleButton,
-              selected[name] && styles.toggleButtonSelected,
-              pressed && styles.toggleButtonPressed,
-            ]}
+            activeOpacity={0.7}
+            style={[styles.toggleButton, selected[name] && styles.toggleButtonSelected]}
             onPress={() => toggleDance(name)}
           >
             <Text style={[styles.toggleButtonText, selected[name] && styles.toggleButtonTextSelected]}>
               {selected[name] ? 'Selected' : 'Select'}
             </Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
       ))}
       {Object.keys(selected).filter((n) => selected[n]).map((name) => (
@@ -154,17 +151,17 @@ const styles = StyleSheet.create({
   },
   toggleButton: {
     paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#2e86de',
-    backgroundColor: '#fff',
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
   toggleButtonSelected: {
     backgroundColor: '#2e86de',
-  },
-  toggleButtonPressed: {
-    opacity: 0.85,
   },
   toggleButtonText: {
     color: '#2e86de',
