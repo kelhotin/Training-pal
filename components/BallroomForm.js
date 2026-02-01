@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Pressable } from 'react-native';
 
 /**
  * Form for logging ballroom dance practice.  Users can select
@@ -61,15 +61,20 @@ export default function BallroomForm({ onSave }) {
       {dances.map((name) => (
         <View key={name} style={styles.danceRow}>
           <Text style={styles.danceName}>{name}</Text>
-          <TouchableOpacity
+          <Pressable
             accessibilityRole="button"
-            style={[styles.toggleButton, selected[name] && styles.toggleButtonSelected]}
+            accessibilityState={{ selected: !!selected[name] }}
+            style={({ pressed }) => [
+              styles.toggleButton,
+              selected[name] && styles.toggleButtonSelected,
+              pressed && styles.toggleButtonPressed,
+            ]}
             onPress={() => toggleDance(name)}
           >
             <Text style={[styles.toggleButtonText, selected[name] && styles.toggleButtonTextSelected]}>
               {selected[name] ? 'Selected' : 'Select'}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       ))}
       {Object.keys(selected).filter((n) => selected[n]).map((name) => (
@@ -157,6 +162,9 @@ const styles = StyleSheet.create({
   },
   toggleButtonSelected: {
     backgroundColor: '#2e86de',
+  },
+  toggleButtonPressed: {
+    opacity: 0.85,
   },
   toggleButtonText: {
     color: '#2e86de',
