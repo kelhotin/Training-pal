@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Switch, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 
 /**
  * Form for logging ballroom dance practice.  Users can select
@@ -61,7 +61,17 @@ export default function BallroomForm({ onSave }) {
       {dances.map((name) => (
         <View key={name} style={styles.danceRow}>
           <Text style={styles.danceName}>{name}</Text>
-          <Switch value={!!selected[name]} onValueChange={() => toggleDance(name)} />
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityState={{ selected: !!selected[name] }}
+            activeOpacity={0.7}
+            style={[styles.toggleButton, selected[name] && styles.toggleButtonSelected]}
+            onPress={() => toggleDance(name)}
+          >
+            <Text style={[styles.toggleButtonText, selected[name] && styles.toggleButtonTextSelected]}>
+              {selected[name] ? 'Selected' : 'Select'}
+            </Text>
+          </TouchableOpacity>
         </View>
       ))}
       {Object.keys(selected).filter((n) => selected[n]).map((name) => (
@@ -138,5 +148,27 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  toggleButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  toggleButtonSelected: {
+    backgroundColor: '#2e86de',
+  },
+  toggleButtonText: {
+    color: '#2e86de',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  toggleButtonTextSelected: {
+    color: '#fff',
   },
 });
