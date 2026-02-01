@@ -6,14 +6,14 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 
  * duration (minutes), calculated pace (min/km) and notes.  It
  * calls the provided onSave callback when the user taps save.
  */
-export default function RunningForm({ onSave }) {
+export default function RunningForm({ onSave, initialData }) {
   const today = new Date().toISOString().split('T')[0];
-  const [date, setDate] = useState(today);
-  const [distance, setDistance] = useState('');
-  const [duration, setDuration] = useState('');
-  const [pace, setPace] = useState('');
-  const [notes, setNotes] = useState('');
-  const [rating, setRating] = useState(0);
+  const [date, setDate] = useState(initialData?.date || today);
+  const [distance, setDistance] = useState(initialData?.distance || '');
+  const [duration, setDuration] = useState(initialData?.duration || '');
+  const [pace, setPace] = useState(initialData?.pace || '');
+  const [notes, setNotes] = useState(initialData?.notes || '');
+  const [rating, setRating] = useState(initialData?.rating || 0);
 
   useEffect(() => {
     // Calculate pace if distance and duration are available

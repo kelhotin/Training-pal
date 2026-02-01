@@ -5,15 +5,15 @@ import { View, Text, TextInput, Switch, TouchableOpacity, StyleSheet, ScrollView
  * Form for logging cycling workouts.  Tracks indoor/outdoor,
  * distance, duration (minutes), computed average speed and notes.
  */
-export default function CyclingForm({ onSave }) {
+export default function CyclingForm({ onSave, initialData }) {
   const today = new Date().toISOString().split('T')[0];
-  const [date, setDate] = useState(today);
-  const [distance, setDistance] = useState('');
-  const [duration, setDuration] = useState('');
-  const [indoor, setIndoor] = useState(false);
-  const [avgSpeed, setAvgSpeed] = useState('');
-  const [notes, setNotes] = useState('');
-  const [rating, setRating] = useState(0);
+  const [date, setDate] = useState(initialData?.date || today);
+  const [distance, setDistance] = useState(initialData?.distance || '');
+  const [duration, setDuration] = useState(initialData?.duration || '');
+  const [indoor, setIndoor] = useState(initialData?.indoor || false);
+  const [avgSpeed, setAvgSpeed] = useState(initialData?.avgSpeed || '');
+  const [notes, setNotes] = useState(initialData?.notes || '');
+  const [rating, setRating] = useState(initialData?.rating || 0);
 
   useEffect(() => {
     const d = parseFloat(distance);

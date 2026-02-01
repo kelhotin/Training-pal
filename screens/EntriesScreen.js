@@ -38,13 +38,13 @@ export default function EntriesScreen() {
   const getFormComponent = (sport, data, onSave) => {
     switch (sport) {
       case 'Running':
-        return <RunningForm key={sport} onSave={onSave} />;
+        return <RunningForm key={sport} onSave={onSave} initialData={data} />;
       case 'Cycling':
-        return <CyclingForm key={sport} onSave={onSave} />;
+        return <CyclingForm key={sport} onSave={onSave} initialData={data} />;
       case 'Gym':
-        return <GymForm key={sport} onSave={onSave} />;
+        return <GymForm key={sport} onSave={onSave} initialData={data} />;
       case 'Ballroom':
-        return <BallroomForm key={sport} onSave={onSave} />;
+        return <BallroomForm key={sport} onSave={onSave} initialData={data} />;
       default:
         return null;
     }

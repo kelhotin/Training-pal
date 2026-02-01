@@ -6,13 +6,13 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 
  * exercises with sets, reps and weight.  The exercises are stored
  * in an array and persisted together when the user saves.
  */
-export default function GymForm({ onSave }) {
+export default function GymForm({ onSave, initialData }) {
   const today = new Date().toISOString().split('T')[0];
-  const [date, setDate] = useState(today);
-  const [exercises, setExercises] = useState([
-    { name: '', sets: '', reps: '', weight: '', rating: 0 },
-  ]);
-  const [notes, setNotes] = useState('');
+  const [date, setDate] = useState(initialData?.date || today);
+  const [exercises, setExercises] = useState(
+    initialData?.exercises || [{ name: '', sets: '', reps: '', weight: '', rating: 0 }]
+  );
+  const [notes, setNotes] = useState(initialData?.notes || '');
 
   const addExercise = () => {
     setExercises([...exercises, { name: '', sets: '', reps: '', weight: '', rating: 0 }]);

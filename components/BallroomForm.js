@@ -6,13 +6,23 @@ import { getSettings } from '../storage';
  * Form for logging ballroom dance practice.  Users can select
  * multiple dances and provide feedback for each selected dance.
  */
-export default function BallroomForm({ onSave }) {
+export default function BallroomForm({ onSave, initialData }) {
   const today = new Date().toISOString().split('T')[0];
-  const [date, setDate] = useState(today);
-  const [selected, setSelected] = useState({});
-  const [feedbacks, setFeedbacks] = useState({});
-  const [ratings, setRatings] = useState({});
-  const [notes, setNotes] = useState('');
+  const [date, setDate] = useState(initialData?.date || today);
+  const [selected, setSelected] = useState(
+    initialData?.dances ? Object.fromEntries(initialData.dances.map(d => [d, true])) : {}
+  );
+  const [feedbacks, setFeedbacks] = useState(
+    initialData?.perDanceFeedback 
+      ? Object.fromEntries(initialData.perDanceFeedback.map(p => [p.name, p.feedback]))
+      : {}
+  );
+  const [ratings, setRatings] = useState(
+    initialData?.perDanceFeedback 
+      ? Object.fromEntries(initialData.perDanceFeedback.map(p => [p.name, p.rating || 0]))
+      : {}
+  );
+  const [notes, setNotes] = useState(initialData?.notes || '');
   const [dances, setDances] = useState([]);
 
   useEffect(() => {
