@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native';
-import { getEntries } from '../storage';
+import { getEntries, updateEntry } from '../storage';
+import RunningForm from '../components/RunningForm';
+import CyclingForm from '../components/CyclingForm';
+import GymForm from '../components/GymForm';
+import BallroomForm from '../components/BallroomForm';
 
 /**
  * Renders a list of all saved entries.  It loads data from
@@ -10,6 +14,7 @@ import { getEntries } from '../storage';
 export default function EntriesScreen() {
   const [entries, setEntries] = useState([]);
   const [selectedEntry, setSelectedEntry] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -18,6 +23,32 @@ export default function EntriesScreen() {
     };
     load();
   }, []);
+
+  const handleEditSave = async (updatedData) => {
+    if (selectedEntry) {
+      await updateEntry(selectedEntry.timestamp, selectedEntry.sport, updatedData);
+      // Reload entries
+      const all = await getEntries();
+      setEntries(all.reverse());
+      setIsEditing(false);
+      setSelectedEntry(null);
+    }
+  };
+
+  const getFormComponent = (sport, data, onSave) => {
+    switch (sport) {
+      case 'Running':
+        return <RunningForm key={sport} onSave={onSave} />;
+      case 'Cycling':
+        return <CyclingForm key={sport} onSave={onSave} />;
+      case 'Gym':
+        return <GymForm key={sport} onSave={onSave} />;
+      case 'Ballroom':
+        return <BallroomForm key={sport} onSave={onSave} />;
+      default:
+        return null;
+    }
+  };
 
   const renderItem = ({ item }) => {
     return (
@@ -63,6 +94,14 @@ export default function EntriesScreen() {
             <DetailRow label="Distance" value={`${data.distance} km`} />
             <DetailRow label="Duration" value={data.duration} />
             <DetailRow label="Pace" value={data.pace} />
+            {data.rating !== undefined && (
+              <View style={styles.ratingDisplay}>
+                <Text style={styles.ratingLabel}>Felt: </Text>
+                <Text style={styles.starsDisplay}>
+                  {Array.from({ length: 5 }, (_, i) => i < data.rating ? '★' : '☆').join('')}
+                </Text>
+              </View>
+            )}
             {data.notes && <DetailRow label="Notes" value={data.notes} />}
           </View>
         );
@@ -72,6 +111,14 @@ export default function EntriesScreen() {
             <DetailRow label="Distance" value={`${data.distance} km`} />
             <DetailRow label="Duration" value={data.duration} />
             <DetailRow label="Type" value={data.indoor ? 'Indoor' : 'Outdoor'} />
+            {data.rating !== undefined && (
+              <View style={styles.ratingDisplay}>
+                <Text style={styles.ratingLabel}>Felt: </Text>
+                <Text style={styles.starsDisplay}>
+                  {Array.from({ length: 5 }, (_, i) => i < data.rating ? '★' : '☆').join('')}
+                </Text>
+              </View>
+            )}
             {data.notes && <DetailRow label="Notes" value={data.notes} />}
           </View>
         );
@@ -83,6 +130,15 @@ export default function EntriesScreen() {
               <View key={idx} style={styles.exerciseItem}>
                 <Text style={styles.exerciseName}>{ex.name}</Text>
                 <Text style={styles.exerciseDetails}>{ex.sets} sets × {ex.reps} reps</Text>
+                {ex.weight && <Text style={styles.exerciseDetails}>Weight: {ex.weight} kg</Text>}
+                {ex.rating !== undefined && (
+                  <View style={styles.ratingDisplay}>
+                    <Text style={styles.ratingLabel}>Felt: </Text>
+                    <Text style={styles.starsDisplay}>
+                      {Array.from({ length: 5 }, (_, i) => i < ex.rating ? '★' : '☆').join('')}
+                    </Text>
+                  </View>
+                )}
               </View>
             ))}
             {data.notes && <DetailRow label="Notes" value={data.notes} />}
@@ -96,7 +152,19 @@ export default function EntriesScreen() {
               <View key={idx} style={styles.danceItem}>
                 <Text style={styles.danceName}>{dance}</Text>
                 {data.perDanceFeedback && data.perDanceFeedback[idx] && (
-                  <Text style={styles.feedbackText}>{data.perDanceFeedback[idx].feedback}</Text>
+                  <View>
+                    {data.perDanceFeedback[idx].feedback && (
+                      <Text style={styles.feedbackText}>{data.perDanceFeedback[idx].feedback}</Text>
+                    )}
+                    {data.perDanceFeedback[idx].rating !== undefined && (
+                      <View style={styles.ratingDisplay}>
+                        <Text style={styles.ratingLabel}>Felt: </Text>
+                        <Text style={styles.starsDisplay}>
+                          {Array.from({ length: 5 }, (_, i) => i < data.perDanceFeedback[idx].rating ? '★' : '☆').join('')}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                 )}
               </View>
             ))}
@@ -122,12 +190,17 @@ export default function EntriesScreen() {
         />
       )}
       
-      <Modal visible={selectedEntry !== null} animationType="slide">
+      <Modal visible={selectedEntry !== null && !isEditing} animationType="slide">
         <View style={styles.modalContainer}>
           <ScrollView contentContainerStyle={styles.modalContent}>
-            <TouchableOpacity style={styles.closeButton} onPress={() => setSelectedEntry(null)}>
-              <Text style={styles.closeButtonText}>✕ Close</Text>
-            </TouchableOpacity>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity style={styles.closeButton} onPress={() => setSelectedEntry(null)}>
+                <Text style={styles.closeButtonText}>✕ Close</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.editButton} onPress={() => setIsEditing(true)}>
+                <Text style={styles.editButtonText}>✎ Edit</Text>
+              </TouchableOpacity>
+            </View>
             
             {selectedEntry && (
               <View>
@@ -137,6 +210,19 @@ export default function EntriesScreen() {
                 {renderEntryDetails(selectedEntry)}
               </View>
             )}
+          </ScrollView>
+        </View>
+      </Modal>
+
+      <Modal visible={isEditing && selectedEntry !== null} animationType="slide">
+        <View style={styles.editModalContainer}>
+          <ScrollView>
+            <View style={styles.editModalHeader}>
+              <TouchableOpacity style={styles.closeButton} onPress={() => setIsEditing(false)}>
+                <Text style={styles.closeButtonText}>✕ Cancel</Text>
+              </TouchableOpacity>
+            </View>
+            {selectedEntry && getFormComponent(selectedEntry.sport, selectedEntry.data, handleEditSave)}
           </ScrollView>
         </View>
       </Modal>
@@ -217,6 +303,35 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#2e86de',
   },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  editButton: {
+    alignSelf: 'flex-end',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#2e86de',
+    borderRadius: 6,
+  },
+  editButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  editModalContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingTop: 16,
+  },
+  editModalHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
   modalDate: {
     fontSize: 13,
     color: '#666',
@@ -284,5 +399,20 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
     fontStyle: 'italic',
+  },
+  ratingDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  ratingLabel: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '600',
+  },
+  starsDisplay: {
+    fontSize: 14,
+    color: '#ffc107',
+    marginLeft: 4,
   },
 });

@@ -10,12 +10,12 @@ export default function GymForm({ onSave }) {
   const today = new Date().toISOString().split('T')[0];
   const [date, setDate] = useState(today);
   const [exercises, setExercises] = useState([
-    { name: '', sets: '', reps: '', weight: '' },
+    { name: '', sets: '', reps: '', weight: '', rating: 0 },
   ]);
   const [notes, setNotes] = useState('');
 
   const addExercise = () => {
-    setExercises([...exercises, { name: '', sets: '', reps: '', weight: '' }]);
+    setExercises([...exercises, { name: '', sets: '', reps: '', weight: '', rating: 0 }]);
   };
 
   const updateExercise = (index, field, value) => {
@@ -79,6 +79,22 @@ export default function GymForm({ onSave }) {
                 placeholder="50"
                 keyboardType="numeric"
               />
+            </View>
+          </View>
+          <View style={styles.ratingContainer}>
+            <Text style={styles.smallLabel}>How did you feel? (0-5 stars)</Text>
+            <View style={styles.starsRow}>
+              {[0, 1, 2, 3, 4, 5].map((star) => (
+                <TouchableOpacity
+                  key={star}
+                  onPress={() => updateExercise(index, 'rating', star)}
+                  style={styles.star}
+                >
+                  <Text style={[styles.starText, star <= exercise.rating && styles.starFilled]}>
+                    ★
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
         </View>
@@ -147,6 +163,25 @@ const styles = StyleSheet.create({
     padding: 8,
     fontSize: 16,
     marginBottom: 8,
+  },
+  ratingContainer: {
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  starsRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    gap: 8,
+  },
+  star: {
+    padding: 4,
+  },
+  starText: {
+    fontSize: 24,
+    color: '#ddd',
+  },
+  starFilled: {
+    color: '#ffc107',
   },
   textarea: {
     minHeight: 80,

@@ -13,6 +13,7 @@ export default function RunningForm({ onSave }) {
   const [duration, setDuration] = useState('');
   const [pace, setPace] = useState('');
   const [notes, setNotes] = useState('');
+  const [rating, setRating] = useState(0);
 
   useEffect(() => {
     // Calculate pace if distance and duration are available
@@ -27,7 +28,7 @@ export default function RunningForm({ onSave }) {
   }, [distance, duration]);
 
   const handleSave = () => {
-    onSave({ date, distance, duration, pace, notes });
+    onSave({ date, distance, duration, pace, notes, rating });
   };
 
   return (
@@ -68,12 +69,28 @@ export default function RunningForm({ onSave }) {
         </View>
       ) : null}
       <View style={styles.fieldGroup}>
+        <Text style={styles.label}>How did you feel? (0-5 stars)</Text>
+        <View style={styles.starsRow}>
+          {[0, 1, 2, 3, 4, 5].map((star) => (
+            <TouchableOpacity
+              key={star}
+              onPress={() => setRating(star)}
+              style={styles.star}
+            >
+              <Text style={[styles.starText, star <= rating && styles.starFilled]}>
+                ★
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+      <View style={styles.fieldGroup}>
         <Text style={styles.label}>Notes</Text>
         <TextInput
           style={[styles.input, styles.textarea]}
           value={notes}
           onChangeText={setNotes}
-          placeholder="How did you feel?"
+          placeholder="Additional notes"
           multiline
         />
       </View>
@@ -110,6 +127,21 @@ const styles = StyleSheet.create({
   value: {
     fontSize: 16,
     paddingVertical: 8,
+  },
+  starsRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    gap: 8,
+  },
+  star: {
+    padding: 4,
+  },
+  starText: {
+    fontSize: 24,
+    color: '#ddd',
+  },
+  starFilled: {
+    color: '#ffc107',
   },
   button: {
     backgroundColor: '#2e86de',

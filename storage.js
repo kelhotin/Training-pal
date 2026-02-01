@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY = 'trainingDiaryEntries';
+const SETTINGS_KEY = 'trainingDiarySettings';
 
 /**
  * Fetch all stored entries from AsyncStorage.  Returns an
@@ -50,5 +51,68 @@ export async function clearEntries() {
     await AsyncStorage.removeItem(STORAGE_KEY);
   } catch (err) {
     console.warn('Failed to clear entries', err);
+  }
+}
+
+/**
+ * Update an existing entry by timestamp.
+ *
+ * @param {number} timestamp - The timestamp of the entry to update.
+ * @param {string} sport - Name of the sport.
+ * @param {object} data - Updated data from the form.
+ */
+export async function updateEntry(timestamp, sport, data) {
+  try {
+    const existing = await getEntries();
+    const index = existing.findIndex((entry) => entry.timestamp === timestamp);
+    if (index !== -1) {
+      existing[index] = { timestamp, sport, data };
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+    }
+  } catch (err) {
+    console.warn('Failed to update entry', err);
+  }
+}
+
+/**
+ * Get current settings. Returns default settings if none exist.
+ */
+export async function getSettings() {
+  try {
+    const json = await AsyncStorage.getItem(SETTINGS_KEY);
+    if (json != null) {
+      return JSON.parse(json);
+    }
+    // Return default settings
+    return {
+      dances: [
+        { name: 'Waltz', enabled: true },
+        { name: 'Tango', enabled: true },
+        { name: 'Viennese Waltz', enabled: true },
+        { name: 'Foxtrot', enabled: true },
+        { name: 'Quickstep', enabled: true },
+        { name: 'Samba', enabled: true },
+        { name: 'Cha Cha', enabled: true },
+        { name: 'Rumba', enabled: true },
+        { name: 'Paso Doble', enabled: true },
+        { name: 'Jive', enabled: true },
+      ],
+    };
+  } catch (err) {
+    console.warn('Failed to read settings', err);
+    return {};
+  }
+}
+
+/**
+ * Save settings to storage.
+ *
+ * @param {object} settings - Settings object with enabled dances.
+ */
+export async function saveSettings(settings) {
+  try {
+    await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch (err) {
+    console.warn('Failed to save settings', err);
   }
 }

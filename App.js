@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './screens/HomeScreen';
 import FormScreen from './screens/FormScreen';
 import EntriesScreen from './screens/EntriesScreen';
+import SettingsScreen from './screens/SettingsScreen';
 
 /**
  * The root of the application. It wires together our screens using
@@ -35,6 +36,11 @@ export default function App() {
           name="Entries"
           component={EntriesScreen}
           options={{ title: 'Entries' }}
+        />
+        <Stack.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{ title: 'Settings' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

@@ -64,6 +64,13 @@ export default function HomeScreen({ navigation }) {
         <Text style={styles.icon}>📖</Text>
         <Text style={styles.label}>View Entries</Text>
       </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.card, styles.settingsButton]}
+        onPress={() => navigation.navigate('Settings')}
+      >
+        <Text style={styles.icon}>⚙️</Text>
+        <Text style={styles.label}>Settings</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -99,5 +106,8 @@ const styles = StyleSheet.create({
   },
   entriesButton: {
     backgroundColor: '#d0e8ff',
+  },
+  settingsButton: {
+    backgroundColor: '#f0e8d0',
   },
 });

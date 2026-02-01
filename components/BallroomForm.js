@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { getSettings } from '../storage';
 
 /**
  * Form for logging ballroom dance practice.  Users can select
@@ -10,28 +11,30 @@ export default function BallroomForm({ onSave }) {
   const [date, setDate] = useState(today);
   const [selected, setSelected] = useState({});
   const [feedbacks, setFeedbacks] = useState({});
+  const [ratings, setRatings] = useState({});
   const [notes, setNotes] = useState('');
+  const [dances, setDances] = useState([]);
 
-  const dances = [
-    'Waltz',
-    'Tango',
-    'Viennese Waltz',
-    'Foxtrot',
-    'Quickstep',
-    'Samba',
-    'Cha Cha',
-    'Rumba',
-    'Paso Doble',
-    'Jive',
-  ];
+  useEffect(() => {
+    const loadDances = async () => {
+      const settings = await getSettings();
+      const enabledDances = settings.dances
+        .filter((dance) => dance.enabled)
+        .map((dance) => dance.name);
+      setDances(enabledDances);
+    };
+    loadDances();
+  }, []);
 
   const toggleDance = (name) => {
     const updated = { ...selected, [name]: !selected[name] };
     setSelected(updated);
     if (!updated[name]) {
-      // clear feedback if deselected
-      const { [name]: _, ...rest } = feedbacks;
-      setFeedbacks(rest);
+      // clear feedback and rating if deselected
+      const { [name]: _, ...restFeedback } = feedbacks;
+      const { [name]: __, ...restRating } = ratings;
+      setFeedbacks(restFeedback);
+      setRatings(restRating);
     }
   };
 
@@ -39,10 +42,18 @@ export default function BallroomForm({ onSave }) {
     setFeedbacks({ ...feedbacks, [name]: text });
   };
 
+  const handleRatingChange = (name, rating) => {
+    setRatings({ ...ratings, [name]: rating });
+  };
+
   const handleSave = () => {
     // extract names of selected dances
     const selectedDances = Object.keys(selected).filter((n) => selected[n]);
-    const perDanceFeedback = selectedDances.map((name) => ({ name, feedback: feedbacks[name] || '' }));
+    const perDanceFeedback = selectedDances.map((name) => ({ 
+      name, 
+      feedback: feedbacks[name] || '',
+      rating: ratings[name] || 0
+    }));
     onSave({ date, dances: selectedDances, perDanceFeedback, notes });
   };
 
@@ -85,6 +96,20 @@ export default function BallroomForm({ onSave }) {
             placeholder={`Comments on ${name}`}
             multiline
           />
+          <Text style={[styles.label, { marginTop: 8 }]}>How did you feel?</Text>
+          <View style={styles.starsRow}>
+            {[0, 1, 2, 3, 4, 5].map((star) => (
+              <TouchableOpacity
+                key={star}
+                onPress={() => handleRatingChange(name, star)}
+                style={styles.star}
+              >
+                <Text style={[styles.starText, star <= (ratings[name] || 0) && styles.starFilled]}>
+                  ★
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       ))}
       <View style={styles.fieldGroup}>
@@ -139,6 +164,22 @@ const styles = StyleSheet.create({
   textarea: {
     minHeight: 80,
     textAlignVertical: 'top',
+  },
+  starsRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    gap: 8,
+    marginTop: 8,
+  },
+  star: {
+    padding: 4,
+  },
+  starText: {
+    fontSize: 24,
+    color: '#ddd',
+  },
+  starFilled: {
+    color: '#ffc107',
   },
   button: {
     backgroundColor: '#2e86de',
